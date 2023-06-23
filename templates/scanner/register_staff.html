@@ -1,0 +1,22 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+
+<h5>Register new staff</h5>
+<hr>
+<div class="container">
+<form action="{% url 'scanner:register_staff' %}" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form | crispy }}
+    <button class="btn btn-success btn-icon-split" type="submit">
+                                <span class="icon text-white-50">
+                                  <i class="fas fa-plus-circle"></i>
+                                </span>
+                                <span class="text">Register</span>
+                              </button>
+</form>
+    </div>
+<br>
+{% endblock content %}

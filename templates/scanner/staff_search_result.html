@@ -1,0 +1,47 @@
+{% extends 'base\base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!--check if there is a student return by the search query-->
+
+{% if object_list %}
+<p>Search results...({{ total_result }})</p>
+
+
+<table class="table table-hover">
+  <thead class="">
+    <tr>
+      <!--      <th scope="col">#</th>-->
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Email</th>
+      <th scope="col">Profile page</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for staff in object_list %}
+
+    <tr>
+      <td>{{ staff.first_name | title }}</td>
+      <td>{{ staff.second_name | title }}</td>
+      <td>{{ staff.Email }}</td>
+      <td><a href="{% url "scanner:staffprofile" staff.pk %}" class="btn btn-success btn-icon-split">
+          <span class="icon text-white-50">
+            <i class="fas fa-user"></i>
+          </span>
+          <span class="text">view profile</span>
+        </a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-centered">
+  <p>Sorry, there are no search results for this query</p>
+  <p>Kindly, search again if user is registered or click here to <a href="{% url 'scanner:register_student' %}">register new
+    student</a> or here <a href="{% url 'scanner:register_staff' %}">to register a new staff</a> </p>
+</div>
+{% endif %}
+
+{% endblock content %}

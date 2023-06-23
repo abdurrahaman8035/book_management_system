@@ -1,0 +1,116 @@
+{% extends 'base/base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+  <h5 style="text-align: center;">STAFF PROFILE</h5>
+  <hr>
+  <div class="row">
+    <div class="col-3">
+      {% if staff.image %}
+      <img src="{{ staff.image.url }}" class="img-thumbnail" alt="{{ staff.first_name }}" height=100% width=100% >
+      {% else %}
+            <img src="{% static 'img/user-circle.svg' %}" class="img-thumbnail" alt="{{ staff.first_name }}" height=100% width=100%>
+      {% endif %}
+
+    </div>
+    <div class="col">
+      <p>Name : {{ staff.first_name | title }} {{ staff.second_name | title }}</p>
+      <p>Email : {{ staff.Email }}</p>
+      <p>Phone Number : {{ staff.phone_number }}</p>
+      <p>Staff ID : {{ staff.staff_id | upper}}</p>
+      <p>Registered on : {{ staff.registration_date }}</p>
+      <p>Email Sent : {{ staff.email_sent }}</p>
+      <!--            <a href="#" class="btn btn-success center">Edit Info</a>-->
+      <a href="{% url 'scanner:edit_staff_profile' staff.pk %}" class="btn btn-success btn-icon-split">
+        <span class="icon text-white-50">
+          <i class="fas fa-user-edit"></i>
+        </span>
+        <span class="text">Edit info</span>
+      </a>
+    </div>
+  </div>
+
+  <hr>
+  {% if books %}
+  <div class="card text-center">
+    <div class="card-header">
+      <h5>Books Information</h5>
+    </div>
+    <div class="card-body">
+      <hr>
+      <div class="row">
+        {% for book in books %}
+        <div class="col-4">
+          <div class="card bg-primary">
+            <div class="card-body">
+              <h5 class="card-title" style="color: white;">{{ book.rem_days }}</h5>
+              <ul style="text-align: left;" class="list-group list-group-flush">
+                <li class="list-group-item">Title : {{ book.title | title }}</li>
+                <li class="list-group-item">Author : </li>
+                <li class="list-group-item">Publisher : </li>
+                <li class="list-group-item">ISBN : 9887676545432</li>
+                <li class="list-group-item">Date Issued : {{ book.issued_date }}</li>
+                <li class="list-group-item">Expiring Date : {{ book.expiring_date }}</li>
+                <li class="list-group-item">Overdue Charges : <span>&#8358;</span>{{ book.overdue |default:"0"}}</li>
+                <li class="list-group-item font-italic">Issued {{ book.issued_date |timesince }} ago</li>
+              </ul>
+              <br>
+              <a href="{% url 'scanner:renew_staff_book' staff.id book.pk %}"
+                class="btn btn-success btn-icon-split card-link" style="padding-right:23px">
+                <span class="icon text-white-50">
+                  <i class="fas fa-undo-alt"></i>
+                </span>
+                <span class="text">renew</span>
+              </a>
+              <a href="{% url 'scanner:delete_staff_book' staff.id book.pk %}"
+                class="btn btn-danger btn-icon-split card-link">
+                <span class="icon text-white-50">
+                  <i class="fas fa-trash"></i>
+                </span>
+                <span class="text">Delete</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% endfor %}
+
+      </div>
+      <br>
+      <hr>
+      <a href="{% url 'scanner:new_staff_book' staff.id %}" class="btn btn-success btn-icon-split">
+        <span class="icon text-white-50">
+          <i class="fas fa-plus-circle"></i>
+        </span>
+        <span class="text">Add new book</span>
+      </a>
+      <a href="{% url 'scanner:all_staff' %}" class="btn btn-success btn-icon-split">
+        <span class="icon text-white-50">
+          <i class="fas fa-user"></i>
+        </span>
+        <span class="text">view other staffs</span>
+      </a>
+
+    </div>
+    <div class="card-footer text-muted">
+
+    </div>
+  </div>
+  {% else %}
+  <p style="text-align:center; color:red;">No book has been borrowed by {{ staff.first_name }}
+    {{ staff.second_name }}</p>
+  <a href="{% url 'scanner:new_staff_book' staff.id %}" class="btn btn-success btn-icon-split">
+    <span class="icon text-white-50">
+      <i class="fas fa-plus-circle"></i>
+    </span>
+    <span class="text">Add new book</span>
+  </a>
+  {% endif %}
+
+</div>
+<br>
+
+{% endblock content %}

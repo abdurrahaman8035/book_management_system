@@ -1,0 +1,25 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+
+{% block content %}
+
+<h5>Renew loan period</h5>
+
+<hr>
+
+<form action="" method="post">
+    <p>Do you want to renew loan period for "{{ book.title }}"?</p>
+    {% csrf_token %}
+    {{ form | crispy }}
+<button class="btn btn-success btn-icon-split" type="submit">
+                                <span class="icon text-white-50">
+                                  <i class="fas fa-check-circle"></i>
+                                </span>
+                                <span class="text">Yes, renew</span>
+                              </button>
+
+</form>
+
+{% endblock content %}

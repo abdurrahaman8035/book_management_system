@@ -1,0 +1,54 @@
+{% extends 'base\base.html' %}
+{% load static %}
+
+
+{% block content %}
+<div>
+  <a href="{% url "scanner:home" %}" class="btn btn-primary btn-icon-split float-right">
+          <span class="icon text-white-50">
+            <i class="fas fa-home"></i>
+          </span>
+          <span class="text">Back to home</span>
+        </a>
+</div>
+<br>
+{% if staffs %}
+
+<p>List of all registered staffs</p>
+<table class="table table-hover">
+  <thead class="">
+    <tr>
+      <!--      <th scope="col">#</th>-->
+      <th scope="col">First Name</th>
+      <th scope="col">Last Name</th>
+      <th scope="col">Phone Number</th>
+      <th scope="col">Staff ID</th>
+      <th scope="col">Profile page</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for staff in staffs %}
+
+    <tr>
+      <td>{{ staff.first_name | title }}</td>
+      <td>{{ staff.second_name | title }}</td>
+      <td>{{ staff.phone_number }}</td>
+      <td>{{ staff.staff_id | upper}}</td>
+      <td><a href="{% url "scanner:staffprofile" staff.pk %}" class="btn btn-success btn-icon-split">
+          <span class="icon text-white-50">
+            <i class="fas fa-user"></i>
+          </span>
+          <span class="text">view profile</span>
+        </a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+
+</table>
+{% else %}
+<br>
+<p class="ml-4"><span><a href="#" class="btn btn-warning btn-circle btn-sm mr-2">
+  <i class="fas fa-exclamation-triangle"></i>
+</a></span>Sorry, there are no staffs registered, click  <a href="{% url 'scanner:register_staff' %}">here</a> to register a new staff</p>
+{% endif %}
+{% endblock content %}

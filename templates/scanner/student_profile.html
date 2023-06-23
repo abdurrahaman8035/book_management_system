@@ -1,0 +1,118 @@
+{% extends 'base/base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="container">
+  <h5 style="text-align: center;">STUDENT PROFILE</h5>
+  <hr>
+  <div class="row">
+    <div class="col-3">
+      {% if student.image %}
+      <img src="{{ student.image.url }}" class="img-thumbnail" alt="{{ student.first_name }}" height=100% width=100% >
+      {% else %}
+            <img src="{% static 'img/user-circle.svg' %}" class="img-thumbnail" alt="{{ student.first_name }}" height=100% width=100%>
+      {% endif %}
+
+    </div>
+    <div class="col">
+      <p>Name : {{ student.first_name | title }} {{ student.second_name | title }}</p>
+      <p>Email : {{ student.Email }}</p>
+      <p>Phone Number : {{ student.phone_number }}</p>
+      <p>ID Number : {{ student.id_number | upper}}</p>
+      <p>Level : {{ student.level }}</p>
+      <p>Registered on : {{ student.registration_date }}</p>
+      <p>Email Sent: {{ student.email_sent }}</p>
+      <!--            <a href="#" class="btn btn-success center">Edit Info</a>-->
+      <a href="{% url 'scanner:edit_student_profile' student.pk %}" class="btn btn-success btn-icon-split">
+        <span class="icon text-white-50">
+          <i class="fas fa-user-edit"></i>
+        </span>
+        <span class="text">Edit info</span>
+      </a>
+    </div>
+  </div>
+
+  <hr>
+  {% if books %}
+  <div class="card text-center">
+    <div class="card-header">
+      <h5>Books Information</h5>
+    </div>
+    <div class="card-body">
+      <!-- <h5 class="card-title" style="font-style: bold;">Books Information</h5> -->
+      <hr>
+      <div class="row">
+        {% for book in books %}
+        <div class="col-4">
+          <div class="card bg-primary">
+            <div class="card-body">
+              <h5 class="card-title" style="color: white;">{{ book.rem_days }}</h5>
+              <ul style="text-align: left;" class="list-group list-group-flush">
+                <li class="list-group-item">Title : {{ book.title | title}}</li>
+                <li class="list-group-item">Author : </li>
+                <li class="list-group-item">Publisher : </li>
+                <li class="list-group-item">ISBN : 9887676545432</li>
+                <li class="list-group-item">Date Issued : {{ book.issued_date }}</li>
+                <li class="list-group-item">Expiring Date : {{ book.expiring_date }}</li>
+                <li class="list-group-item">Overdue Charges : <span>&#8358;</span>{{ book.overdue |default:"0"}}</li>
+                <li class="list-group-item font-italic">Issued {{ book.issued_date |timesince }} ago</li>
+              </ul>
+              <br>
+              <a href="{% url 'scanner:renew-book' student.id book.pk %}"
+                class="btn btn-success btn-icon-split card-link" style="padding-right:23px">
+                <span class="icon text-white-50">
+                  <i class="fas fa-undo-alt"></i>
+                </span>
+                <span class="text">renew</span>
+              </a>
+              <a href="{% url 'scanner:deletebook' student.id book.pk %}"
+                class="btn btn-danger btn-icon-split card-link">
+                <span class="icon text-white-50">
+                  <i class="fas fa-trash"></i>
+                </span>
+                <span class="text">Delete</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {% endfor %}
+
+      </div>
+      <br>
+      <hr>
+      <a href="{% url 'scanner:book-new' student.id %}" class="btn btn-success btn-icon-split">
+        <span class="icon text-white-50">
+          <i class="fas fa-plus-circle"></i>
+        </span>
+        <span class="text">Add new book</span>
+      </a>
+      <a href="{% url 'scanner:allstudents' %}" class="btn btn-success btn-icon-split">
+        <span class="icon text-white-50">
+          <i class="fas fa-user-graduate"></i>
+        </span>
+        <span class="text">view other students</span>
+      </a>
+
+    </div>
+    <div class="card-footer text-muted">
+
+    </div>
+  </div>
+  {% else %}
+  <p style="text-align:center; color:red;">No book has been borrowed by {{ student.first_name }}
+    {{ student.second_name }}</p>
+  <a href="{% url 'scanner:book-new' student.id %}" class="btn btn-success btn-icon-split">
+    <span class="icon text-white-50">
+      <i class="fas fa-plus-circle"></i>
+    </span>
+    <span class="text">Add new book</span>
+  </a>
+  {% endif %}
+
+</div>
+<br>
+
+{% endblock content %}

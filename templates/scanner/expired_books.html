@@ -1,0 +1,72 @@
+{% extends 'base\base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!--Display a list of expired books and a link to the profile of the users that borrowed them-->
+
+{% if books or staff_books %}
+
+<div>
+  <a href="{% url "scanner:home" %}" class="btn btn-primary btn-icon-split float-right">
+          <span class="icon text-white-50">
+            <i class="fas fa-home"></i>
+          </span>
+          <span class="text">Back to home</span>
+        </a>
+</div>
+<br>
+<p>Expired books...</p>
+
+
+<table class="table table-hover">
+  <thead class="">
+    <tr>
+      <!--      <th scope="col">#</th>-->
+      <th scope="col">Title</th>
+      <th scope="col">Issued To</th>
+      <th scope="col">Expired since</th>
+      <th scope="col">Profile page</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for book in books %}
+
+    <tr>
+      <td>{{ book.title | title |truncatewords:4 }}</td>
+      <td>{{ book.borrowed_by.first_name | title }} {{ book.borrowed_by.second_name | title }}</td>
+      <td class="text-danger">{{ book.expiring_date |timesince }} ago</td>
+      <td><a href="{% url 'scanner:profile' book.borrowed_by.id %}" class="btn btn-success btn-icon-split">
+          <span class="icon text-white-50">
+            <i class="fas fa-user"></i>
+          </span>
+          <span class="text">view in profile</span>
+        </a></td>
+    </tr>
+    {% endfor %}
+
+    {% if staff_books %}
+    {% for staff_book in staff_books %}
+    <tr>
+      <td>{{ staff_book.title | title }}</td>
+      <td>{{ staff_book.borrowed_by.first_name | title }} {{ staff_book.borrowed_by.second_name | title }} <span class="text-success">(staff)</span></td>
+      <td class="text-danger">{{ staff_book.expiring_date |timesince }} ago</td>
+      <td><a href="{% url "scanner:staffprofile" staff_book.borrowed_by.pk %}" class="btn btn-success btn-icon-split">
+          <span class="icon text-white-50">
+            <i class="fas fa-user"></i>
+          </span>
+          <span class="text">view in profile</span>
+        </a></td>
+    </tr>
+    {% endfor %}
+
+    {% endif %}
+  </tbody>
+</table>
+{% else %}
+<div class="text-centered">
+  <p style="text-align: center;">Ooops! There are no expired books</p>
+</div>
+{% endif %}
+
+{% endblock content %}
