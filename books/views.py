@@ -1,128 +1,145 @@
-from django.shortcuts import render
-
-# Create your views here.
-# from django.core.mail import send_mail
+from datetime import date, datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.views.generic import ListView, DeleteView, UpdateView, CreateView
-from .models import Book, Student, Staff, Staff_Book
-from datetime import *
+from django.views.generic import (
+    ListView,
+    DeleteView,
+    UpdateView,
+    CreateView,
+    TemplateView,
+    DetailView,
+)
 from django.urls import reverse_lazy
-from .forms import *
-
-# Create your views here.
-
-# send_mail(subject='Greeting from librarian software',
-#           recipient_list=['abdurrahamanabdullahi20@gmail.com'])
+from .models import Student, Staff, StaffBook, StudentBook
 
 
-@login_required()
-def HomeView(request):
-    total_books = Book.objects.count() + Staff_Book.objects.count()
-    total_students = Student.objects.count()
-    total_staff = Staff.objects.count()
-    student_expired_books = Book.objects.filter(expiring_date__lt=date.today())
-    staff_expired_books = Staff_Book.objects.filter(expiring_date__lt=date.today())
-    expired_books = len(student_expired_books) + len(staff_expired_books)
-    context = {
-        "total_books": total_books,
-        "total_students": total_students,
-        "expired_books": expired_books,
-        "total_staff": total_staff,
-    }
-    return render(request, "scanner\\index.html", context)
+class HomePageView(LoginRequiredMixin, TemplateView):
+    """Display the HomePage"""
+
+    template_name = "scanner\\index.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        total_books = StudentBook.objects.count() + StaffBook.objects.count()
+        total_students = Student.objects.count()
+        total_staff = Staff.objects.count()
+        student_expired_books = Book.objects.filter(expiring_date__lt=date.today())
+        staff_expired_books = StaffBook.objects.filter(expiring_date__lt=date.today())
+        total_expired_books = student_expired_books.count() + staff_expired_books.count()
+        context = {
+            "total_books": total_books,
+            "total_students": total_students,
+            "total_expired_books": total_expired_books,
+            "total_staff": total_staff,
+        }
+        return context
 
 
-@login_required()
-def new_student_book(request, student_id):
-    """Add a new book for a particular student."""
-    student = Student.objects.get(id=student_id)
-    if request.method != "POST":
-        # No data submitted; create a blank form.
-        form = BookForm()
-    else:
-        # POST data submitted; process data.
-        form = BookForm(data=request.POST)
-        if form.is_valid():
-            book = form.save(commit=False)
-            book.borrowed_by = student
+class AddStudentBook(LoginRequiredMixin, CreateView):
+    """Lend a Book to a Student"""
+
+    model = StudentBook
+    template_name = "scanner\\addBook.html"
+
+    def get_success_url(self):
+        book = self.object
+        student = book.borrowed_by.pk
+        return reverse_lazy("scanner:profile", kwargs={"student_id": student})
+
+
+class AddStaffBook(LoginRequiredMixin, CreateView):
+    """Lend a Book to a staff"""
+
+    model = StaffBook
+    template_name = "scanner\\addStaffBook.html"
+
+    def get_success_url(self):
+        staff = self.object.borrowed_by.pk
+        return reverse_lazy("scanner:staffprofile", kwargs={"staff_id": staff})
+
+
+class StudentDetailView(LoginRequiredMixin, DetailView):
+    """Display Student information and all books borrowed by the Student"""
+
+    model = Student
+    template_name = "scanner\\student_profile.html"
+
+    def get_queryset(self, **kwargs):
+        context = super().get_queryset(**kwargs)
+        student = self.object.id
+        # get all books borrowed by this student using related_name
+        all_books = student.books.all()
+
+        for book in all_books:
+            # calculate their remaining days left to expire
+            book_expiring_date = datetime.date(book.expiring_date)
+            current_date = date.today()
+
+            time_left = (
+                date(
+                    book_expiring_date.year,
+                    book_expiring_date.month,
+                    book_expiring_date.day,
+                )
+            ) - current_date
+
+            remaining_days = time_left.days
+
+            result = str(remaining_days) + " day(s) remaining"
+            # check if book has expired
+            if remaining_days <= 0:
+                # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
+                book.overdue = (remaining_days * (-1)) * 20
+            book.remaining_days = result
             book.save()
-            return redirect("scanner:profile", student_id=student_id)
-    # Display a blank or invalid form.
-    context = {"student": student, "form": form}
-    return render(request, "scanner\\addBook.html", context)
+        books = all_books
+        context["books"] = books
+        context["student"] = student
+        return context
 
 
-@login_required()
-def new_staff_book(request, staff_id):
-    """ "Add a new book for a particular staff."""
-    staff = Staff.objects.get(id=staff_id)
-    if request.method != "POST":
-        # No data submitted; create a blank form.
-        form = StaffBookForm()
-    else:
-        # POST data submitted; process data.
-        form = StaffBookForm(data=request.POST)
-        if form.is_valid():
-            book = form.save(commit=False)
-            book.borrowed_by = staff
+class StaffDetailView(LoginRequiredMixin, DetailView):
+    """Display a staff information and all books borrowed by the staff"""
+
+    model = Staff
+    template_name = "scanner\\staff_profile.html"
+    login_url = "login"
+
+    def get_queryset(self, **kwargs):
+        context = super().get_queryset(**kwargs)
+        staff = self.object.id
+        # get all books borrowed by this student using related_name
+        all_books = staff.books.all()
+
+        for book in all_books:
+            # calculate their remaining days left to expire
+            book_expiring_date = datetime.date(book.expiring_date)
+            current_date = date.today()
+
+            time_left = (
+                date(
+                    book_expiring_date.year,
+                    book_expiring_date.month,
+                    book_expiring_date.day,
+                )
+            ) - current_date
+
+            remaining_days = time_left.days
+
+            result = str(remaining_days) + " day(s) remaining"
+            # check if book has expired
+            if remaining_days <= 0:
+                # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
+                book.overdue = (remaining_days * (-1)) * 20
+            book.remaining_days = result
             book.save()
-            return redirect("scanner:staffprofile", staff_id=staff_id)
-    # Display a blank or invalid form.
-    context = {"staff": staff, "form": form}
-    return render(request, "scanner\\addStaffBook.html", context)
-
-
-@login_required()
-def StudentDetailView(request, student_id):
-    """Show a single student and all books borrowed by students."""
-    student = Student.objects.get(id=student_id)
-    # get all books borrowed by this student
-    all_books = student.books.all()
-
-    for book in all_books:
-        # calculate their remaining days left to expire
-        b = datetime.date(book.expiring_date)
-
-        time_left = (date(b.year, b.month, b.day)) - date.today()
-
-        result = str(time_left.days) + " day(s) remaining"
-        # check if book has expired
-        if time_left.days < 0:
-            book.overdue = (time_left.days * (-1)) * 20
-        book.rem_days = result
-        book.save()
-    books = all_books
-    context = {"books": books, "student": student}
-    return render(request, "scanner\\student_profile.html", context)
-
-
-@login_required()
-def StaffDetailView(request, staff_id):
-    """Show a single staff and all books borrowed by the staff."""
-    staff = Staff.objects.get(id=staff_id)
-    # get all books borrowed by this student
-    all_books = staff.books.all()
-
-    for book in all_books:
-        # calculate their remaining days left to expire
-        b = datetime.date(book.expiring_date)
-
-        days_left = (date(b.year, b.month, b.day)) - date.today()
-
-        result = str(days_left.days) + " day(s) remaining"
-        # check if book has expired
-        if days_left.days < 0:
-            book.overdue = (days_left.days * (-1)) * 20
-        book.rem_days = result
-        book.save()
-    books = all_books
-    context = {"books": books, "staff": staff}
-    return render(request, "scanner\\staff_profile.html", context)
+        books = all_books
+        context["books"] = books
+        context["staff"] = staff
+        return context
 
 
 class AllStudentsView(LoginRequiredMixin, ListView):
+    """Display list of all Students registered"""
     model = Student
     template_name = "scanner\\students_list.html"
     context_object_name = "students"
@@ -132,8 +149,10 @@ class AllStudentsView(LoginRequiredMixin, ListView):
 
 
 class StudentBookDelete(LoginRequiredMixin, DeleteView):
-    model = Book
+    """Remove a Student Book record"""
+    model = StudentBook
     template_name = "scanner\\deletebook.html"
+    login_url = "login"
 
     # get the student id from the url
     def get_success_url(self):
@@ -142,9 +161,11 @@ class StudentBookDelete(LoginRequiredMixin, DeleteView):
 
 
 class StaffBookDelete(LoginRequiredMixin, DeleteView):
-    model = Staff_Book
+    """Remove a Staff Book record"""
+    model = StaffBook
     template_name = "scanner\\deletestaffbook.html"
     context_object_name = "book"
+    login_url = "login"
 
     # get the staff id from the url
     def get_success_url(self):
@@ -155,7 +176,7 @@ class StaffBookDelete(LoginRequiredMixin, DeleteView):
 class RenewStudentBookView(LoginRequiredMixin, UpdateView):
     """Renew a book borrowed by a student"""
 
-    model = Book
+    model = StudentBook
     fields = ["expiring_date"]
     template_name = "scanner\\renewbook.html"
     context_object_name = "book"
@@ -170,7 +191,7 @@ class RenewStudentBookView(LoginRequiredMixin, UpdateView):
 class RenewStaffBookView(LoginRequiredMixin, UpdateView):
     """Renew a book borrowed by a staff"""
 
-    model = Staff_Book
+    model = StaffBook
     fields = ["expiring_date"]
     template_name = "scanner\\renewstaffbook.html"
     context_object_name = "book"
@@ -190,21 +211,22 @@ class UserSearch(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         query = self.request.GET.get("search_box")
-        object_list = Student.objects.filter(id_number__icontains=query)
-        if object_list:
+        student_list = Student.objects.filter(id_number__icontains=query)
+        if student_list:
             self.template_name = "scanner\\student_search_result.html"
-            total_result = len(object_list)
+            total_result = student_list.count()
             self.extra_context = {"total_result": total_result}
-            return object_list
+            return student_list
         else:
-            object_list = Staff.objects.filter(staff_id__icontains=query)
+            staff_list = Staff.objects.filter(staff_id__icontains=query)
             self.template_name = "scanner\\staff_search_result.html"
-            total_result = len(object_list)
+            total_result = staff_list.count()
             self.extra_context = {"total_result": total_result}
-            return object_list
+            return staff_list
 
 
-class Register_student(LoginRequiredMixin, CreateView):
+class RegisterStudent(LoginRequiredMixin, CreateView):
+    """Add a new Student"""
     model = Student
     template_name = "scanner\\register_student.html"
     fields = [
@@ -220,7 +242,8 @@ class Register_student(LoginRequiredMixin, CreateView):
     login_url = "login"
 
 
-class Register_staff(LoginRequiredMixin, CreateView):
+class RegisterStaff(LoginRequiredMixin, CreateView):
+    """Add a new Staff"""
     model = Staff
     template_name = "scanner\\register_staff.html"
     fields = "__all__"
@@ -228,6 +251,7 @@ class Register_staff(LoginRequiredMixin, CreateView):
 
 
 class StudentEditProfile(UpdateView):
+    """Edit a Student's information"""
     model = Student
     template_name = "scanner\\edit_student_profile.html"
     fields = [
@@ -244,6 +268,7 @@ class StudentEditProfile(UpdateView):
 
 
 class StaffEditProfile(UpdateView):
+    """Edit Staff information"""
     model = Staff
     template_name = "scanner\\edit_staff_profile.html"
     fields = ["image", "first_name", "second_name", "staff_id", "Email", "phone_number"]
@@ -253,39 +278,47 @@ class StaffEditProfile(UpdateView):
 class ExpiredBooksView(LoginRequiredMixin, ListView):
     """Display a list of expired books"""
 
-    model = Book
+    model = StudentBook
     template_name = "scanner\\expired_books.html"
     login_url = "login"
 
     def get_queryset(self):
-        books = Book.objects.filter(expiring_date__lt=date.today())
-        staff_expired_books = Staff_Book.objects.filter(expiring_date__lt=date.today())
-        self.extra_context = {"books": books, "staff_books": staff_expired_books}
-        return books, staff_expired_books
+        context = super().get_context_data()
+        student_expired_books = StudentBook.objects.filter(
+            expiring_date__lt=date.today()
+        )
+        staff_expired_books = StaffBook.objects.filter(expiring_date__lt=date.today())
+        context = {
+            "student_expired_books": student_expired_books,
+            "staff_expired_books": staff_expired_books,
+        }
+        return context
 
 
 class AllBooksView(LoginRequiredMixin, ListView):
     """Display a list of all books"""
 
-    model = Book
     template_name = "scanner\\all_books.html"
     login_url = "login"
 
     def get_queryset(self):
-        student_books = Book.objects.all()
-        staff_books = Staff_Book.objects.all()
-        self.extra_context = {"books": student_books, "staff_books": staff_books}
-        return student_books, staff_books
+        student_books_list = StudentBook.objects.all()
+        staff_books_list = StaffBook.objects.all()
+        context = {
+            "student_books_list": student_books_list,
+            "staff_books_list": staff_books_list,
+        }
+        return context
 
 
 class AllStaffView(LoginRequiredMixin, ListView):
     """Display a list of all academic staff that borrowed books"""
 
     model = Staff
-    context_object_name = "staffs"
+    context_object_name = "staff"
     template_name = "scanner\\all_staff.html"
     login_url = "login"
 
     def get_queryset(self):
-        object_list = Staff.objects.all()
-        return object_list
+        staff_list = Staff.objects.all()
+        return staff_list

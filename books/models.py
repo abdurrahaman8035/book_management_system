@@ -17,11 +17,12 @@ class Year_Of_Reg(models.Model):
         return f"{self.year}".title()
 
 
-CHOICES = [
-    ("100", "100 L"),
-    ("200", "200 L"),
-    ("300", "300 L"),
-    ("400", "400 L"),
+LEVEL_CHOICES = [
+    ("remedials", "Remedials"),
+    ("100", "100 Level"),
+    ("200", "200 Level"),
+    ("300", "300 Level"),
+    ("400", "400 Level"),
 ]
 
 
@@ -45,8 +46,8 @@ class Student(models.Model):
     )
     image_url = models.CharField(max_length=100, null=True, blank=True)
     level = models.CharField(
-        max_length=5,
-        choices=CHOICES,
+        max_length=10,
+        choices=LEVEL_CHOICES,
     )
     email_sent = models.BooleanField(null=True, blank=True, default=False)
     sms_sent = models.BooleanField(null=True, blank=True, default=False)
@@ -87,7 +88,7 @@ class Staff(models.Model):
         return self.first_name.title() + " " + self.second_name.title()
 
 
-class Book(models.Model):
+class StudentBook(models.Model):
     """create a book borrowed by a particular student"""
 
     class Meta:
@@ -99,7 +100,7 @@ class Book(models.Model):
     )
     issued_date = models.DateTimeField(default=datetime.now())
     # added_days = models.IntegerField(null=True, blank=True)
-    rem_days = models.CharField(max_length=100, null=True, blank=True)
+    remaining_days = models.CharField(max_length=100, null=True, blank=True)
     expiring_date = models.DateTimeField(
         default=(datetime.today() + timedelta(days=14)), null=True, blank=True
     )
@@ -112,7 +113,7 @@ class Book(models.Model):
         return self.title[:50]
 
 
-class Staff_Book(models.Model):
+class StaffBook(models.Model):
     """create a book borrowed by a particular staff"""
 
     class Meta:
@@ -124,7 +125,7 @@ class Staff_Book(models.Model):
     )
     issued_date = models.DateTimeField(default=datetime.now())
     # added_days = models.IntegerField(null=True, blank=True)
-    rem_days = models.CharField(max_length=100, null=True, blank=True)
+    remaining_days = models.CharField(max_length=100, null=True, blank=True)
     expiring_date = models.DateTimeField(
         default=(datetime.today() + timedelta(days=21)), null=True, blank=True
     )
@@ -146,7 +147,7 @@ def send_email_to_student(sender, **kwargs):
         "Hello {}, thanks for registering with us! Attached is our rules"
         " and regulations for you to read! thanks".format(student_name)
     )
-    if student.email_sent == False:
+    if not student.email_sent:
         email = EmailMessage(
             "Welcome Email from YSU YSU-Library_Team", message, [student_email]
         )
@@ -169,8 +170,7 @@ def send_email_to_staff(sender, **kwargs):
             staff_name
         )
     )
-    sent = staff.email_sent
-    if !sent:
+    if not staff.email_sent:
         email = EmailMessage(
             "Welcome Email from YSU YSU-Library_Team", message, [staff_email]
         )
@@ -182,13 +182,13 @@ def send_email_to_staff(sender, **kwargs):
         staff.save()
 
 
-# class Edit_Overdue_Charges(models.Model):
-#     overdue = models.IntegerField()
+class Overdue_Charges(models.Model):
+    overdue = models.IntegerField()
 
-#     class Meta:
-#         verbose_name_plural = 'overdue charges'
+    class Meta:
+        verbose_name_plural = 'overdue charges'
 
-#     def __str__(self):
-#         value = self.overdue
-#         return 'The current overdue charges is ' +\
-# str(value) + ' naira per day'
+    def __str__(self):
+        value = self.overdue
+        return 'The current overdue charges is ' +\
+        str(value) + ' naira per day'

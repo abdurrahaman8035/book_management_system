@@ -1,5 +1,5 @@
 from django.urls import path
-from scanner.views import (
+from books.views import (
     HomeView,
     AllStudentsView,
     new_student_book,
@@ -20,7 +20,7 @@ from scanner.views import (
     Register_staff,
 )
 
-app_name = "scanner"
+app_name = "books"
 
 urlpatterns = [
     path("", HomeView, name="home"),
