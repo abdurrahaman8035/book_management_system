@@ -1,37 +1,37 @@
 from django.urls import path
 from books.views import (
-    HomeView,
+    HomePageView,
     AllStudentsView,
-    new_student_book,
     StudentDetailView,
     StudentBookDelete,
     RenewStudentBookView,
     UserSearch,
-    Register_student,
+    AddStudentBook,
     StudentEditProfile,
     ExpiredBooksView,
     AllBooksView,
     AllStaffView,
     StaffDetailView,
-    new_staff_book,
+    AddStaffBook,
     StaffBookDelete,
     RenewStaffBookView,
     StaffEditProfile,
-    Register_staff,
+    RegisterStaff,
+    RegisterStudent,
 )
 
 app_name = "books"
 
 urlpatterns = [
-    path("", HomeView, name="home"),
+    path("", HomePageView, name="home"),
     path("all_staff/", AllStaffView.as_view(), name="all_staff"),
     path("all_books/", AllBooksView.as_view(), name="all_books"),
     path("expired_books/", ExpiredBooksView.as_view(), name="expired_books"),
-    path("register/", Register_student.as_view(), name="register_student"),
+    path("register/", RegisterStudent.as_view(), name="register_student"),
     path("search/", UserSearch.as_view(), name="search_student"),
     path("students/", AllStudentsView.as_view(), name="allstudents"),
     path("students/<int:student_id>/", StudentDetailView, name="profile"),
-    path("book/<int:student_id>/", new_student_book, name="book-new"),
+    path("book/<int:student_id>/", AddStudentBook, name="book-new"),
     path(
         "students/<int:student_id>/<int:pk>/delete",
         StudentBookDelete.as_view(),
@@ -47,9 +47,9 @@ urlpatterns = [
         StudentEditProfile.as_view(),
         name="edit_student_profile",
     ),
-    path("register_staff/", Register_staff.as_view(), name="register_staff"),
+    path("register_staff/", RegisterStaff.as_view(), name="register_staff"),
     path("staff/<int:staff_id>/", StaffDetailView, name="staffprofile"),
-    path("staff_book/<int:staff_id>/", new_staff_book, name="new_staff_book"),
+    path("staff_book/<int:staff_id>/", AddStaffBook, name="new_staff_book"),
     path(
         "staff/<int:staff_id>/<int:pk>/delete",
         StaffBookDelete.as_view(),

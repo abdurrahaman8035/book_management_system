@@ -15,7 +15,7 @@ from .models import Student, Staff, StaffBook, StudentBook
 class HomePageView(LoginRequiredMixin, TemplateView):
     """Display the HomePage"""
 
-    template_name = "scanner\\index.html"
+    template_name = "books\\index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -38,30 +38,30 @@ class AddStudentBook(LoginRequiredMixin, CreateView):
     """Lend a Book to a Student"""
 
     model = StudentBook
-    template_name = "scanner\\addBook.html"
+    template_name = "books\\addBook.html"
 
     def get_success_url(self):
         book = self.object
         student = book.borrowed_by.pk
-        return reverse_lazy("scanner:profile", kwargs={"student_id": student})
+        return reverse_lazy("books:profile", kwargs={"student_id": student})
 
 
 class AddStaffBook(LoginRequiredMixin, CreateView):
     """Lend a Book to a staff"""
 
     model = StaffBook
-    template_name = "scanner\\addStaffBook.html"
+    template_name = "books\\addStaffBook.html"
 
     def get_success_url(self):
         staff = self.object.borrowed_by.pk
-        return reverse_lazy("scanner:staffprofile", kwargs={"staff_id": staff})
+        return reverse_lazy("books:staffprofile", kwargs={"staff_id": staff})
 
 
 class StudentDetailView(LoginRequiredMixin, DetailView):
     """Display Student information and all books borrowed by the Student"""
 
     model = Student
-    template_name = "scanner\\student_profile.html"
+    template_name = "books\\student_profile.html"
 
     def get_queryset(self, **kwargs):
         context = super().get_queryset(**kwargs)
@@ -101,7 +101,7 @@ class StaffDetailView(LoginRequiredMixin, DetailView):
     """Display a staff information and all books borrowed by the staff"""
 
     model = Staff
-    template_name = "scanner\\staff_profile.html"
+    template_name = "books\\staff_profile.html"
     login_url = "login"
 
     def get_queryset(self, **kwargs):
@@ -141,36 +141,36 @@ class StaffDetailView(LoginRequiredMixin, DetailView):
 class AllStudentsView(LoginRequiredMixin, ListView):
     """Display list of all Students registered"""
     model = Student
-    template_name = "scanner\\students_list.html"
+    template_name = "books\\students_list.html"
     context_object_name = "students"
-    total_students = Student.objects.count()
-    extra_context = {"total_students": total_students}
+    total_students_count = Student.objects.count()
+    extra_context = {"total_students_count": total_students_count}
     login_url = "login"
 
 
 class StudentBookDelete(LoginRequiredMixin, DeleteView):
     """Remove a Student Book record"""
     model = StudentBook
-    template_name = "scanner\\deletebook.html"
+    template_name = "books\\deletebook.html"
     login_url = "login"
 
     # get the student id from the url
     def get_success_url(self):
         student = self.object.borrowed_by.pk
-        return reverse_lazy("scanner:profile", kwargs={"student_id": student})
+        return reverse_lazy("books:profile", kwargs={"student_id": student})
 
 
 class StaffBookDelete(LoginRequiredMixin, DeleteView):
     """Remove a Staff Book record"""
     model = StaffBook
-    template_name = "scanner\\deletestaffbook.html"
+    template_name = "books\\deletestaffbook.html"
     context_object_name = "book"
     login_url = "login"
 
     # get the staff id from the url
     def get_success_url(self):
         staff_id = self.object.borrowed_by.pk
-        return reverse_lazy("scanner:staffprofile", kwargs={"staff_id": staff_id})
+        return reverse_lazy("books:staffprofile", kwargs={"staff_id": staff_id})
 
 
 class RenewStudentBookView(LoginRequiredMixin, UpdateView):
@@ -178,14 +178,14 @@ class RenewStudentBookView(LoginRequiredMixin, UpdateView):
 
     model = StudentBook
     fields = ["expiring_date"]
-    template_name = "scanner\\renewbook.html"
+    template_name = "books\\renewbook.html"
     context_object_name = "book"
     login_url = "login"
 
     # get the student id from the url
     def get_success_url(self):
         student = self.object.borrowed_by.pk
-        return reverse_lazy("scanner:profile", kwargs={"student_id": student})
+        return reverse_lazy("books:profile", kwargs={"student_id": student})
 
 
 class RenewStaffBookView(LoginRequiredMixin, UpdateView):
@@ -193,14 +193,14 @@ class RenewStaffBookView(LoginRequiredMixin, UpdateView):
 
     model = StaffBook
     fields = ["expiring_date"]
-    template_name = "scanner\\renewstaffbook.html"
+    template_name = "books\\renewstaffbook.html"
     context_object_name = "book"
     login_url = "login"
 
     # get the staff id from the url
     def get_success_url(self):
         staff = self.object.borrowed_by.pk
-        return reverse_lazy("scanner:staffprofile", kwargs={"staff_id": staff})
+        return reverse_lazy("books:staffprofile", kwargs={"staff_id": staff})
 
 
 class UserSearch(LoginRequiredMixin, ListView):
@@ -213,13 +213,13 @@ class UserSearch(LoginRequiredMixin, ListView):
         query = self.request.GET.get("search_box")
         student_list = Student.objects.filter(id_number__icontains=query)
         if student_list:
-            self.template_name = "scanner\\student_search_result.html"
+            self.template_name = "books\\student_search_result.html"
             total_result = student_list.count()
             self.extra_context = {"total_result": total_result}
             return student_list
         else:
             staff_list = Staff.objects.filter(staff_id__icontains=query)
-            self.template_name = "scanner\\staff_search_result.html"
+            self.template_name = "books\\staff_search_result.html"
             total_result = staff_list.count()
             self.extra_context = {"total_result": total_result}
             return staff_list
@@ -228,7 +228,7 @@ class UserSearch(LoginRequiredMixin, ListView):
 class RegisterStudent(LoginRequiredMixin, CreateView):
     """Add a new Student"""
     model = Student
-    template_name = "scanner\\register_student.html"
+    template_name = "books\\register_student.html"
     fields = [
         "image",
         "first_name",
@@ -245,7 +245,7 @@ class RegisterStudent(LoginRequiredMixin, CreateView):
 class RegisterStaff(LoginRequiredMixin, CreateView):
     """Add a new Staff"""
     model = Staff
-    template_name = "scanner\\register_staff.html"
+    template_name = "books\\register_staff.html"
     fields = "__all__"
     login_url = "login"
 
@@ -253,7 +253,7 @@ class RegisterStaff(LoginRequiredMixin, CreateView):
 class StudentEditProfile(UpdateView):
     """Edit a Student's information"""
     model = Student
-    template_name = "scanner\\edit_student_profile.html"
+    template_name = "books\\edit_student_profile.html"
     fields = [
         "image",
         "first_name",
@@ -270,7 +270,7 @@ class StudentEditProfile(UpdateView):
 class StaffEditProfile(UpdateView):
     """Edit Staff information"""
     model = Staff
-    template_name = "scanner\\edit_staff_profile.html"
+    template_name = "books\\edit_staff_profile.html"
     fields = ["image", "first_name", "second_name", "staff_id", "Email", "phone_number"]
     context_object_name = "staff"
 
@@ -279,7 +279,7 @@ class ExpiredBooksView(LoginRequiredMixin, ListView):
     """Display a list of expired books"""
 
     model = StudentBook
-    template_name = "scanner\\expired_books.html"
+    template_name = "books\\expired_books.html"
     login_url = "login"
 
     def get_queryset(self):
@@ -298,7 +298,7 @@ class ExpiredBooksView(LoginRequiredMixin, ListView):
 class AllBooksView(LoginRequiredMixin, ListView):
     """Display a list of all books"""
 
-    template_name = "scanner\\all_books.html"
+    template_name = "books\\all_books.html"
     login_url = "login"
 
     def get_queryset(self):
@@ -316,7 +316,7 @@ class AllStaffView(LoginRequiredMixin, ListView):
 
     model = Staff
     context_object_name = "staff"
-    template_name = "scanner\\all_staff.html"
+    template_name = "books\\all_staff.html"
     login_url = "login"
 
     def get_queryset(self):
