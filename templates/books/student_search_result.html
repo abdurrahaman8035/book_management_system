@@ -26,7 +26,7 @@
       <td>{{ student.first_name | title }}</td>
       <td>{{ student.second_name | title }}</td>
       <td>{{ student.Email }}</td>
-      <td><a href="{% url 'scanner:profile' student.id %}" class="btn btn-success btn-icon-split">
+      <td><a href="{% url 'books:profile' student.id %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>
           </span>
@@ -39,7 +39,7 @@
 {% else %}
 <div class="text-centered">
   <p>Sorry, there are no search results for this query</p>
-  <p>Kindly, search again if user is registered or <a href="{% url 'scanner:register_student' %}">click here</a> to register new
+  <p>Kindly, search again if user is registered or <a href="{% url 'books:register_student' %}">click here</a> to register new
     student</p>
 </div>
 {% endif %}

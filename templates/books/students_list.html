@@ -4,7 +4,7 @@
 
 {% block content %}
 <div>
-  <a href="{% url "scanner:home" %}" class="btn btn-primary btn-icon-split float-right">
+  <a href="{% url "books:home" %}" class="btn btn-primary btn-icon-split float-right">
           <span class="icon text-white-50">
             <i class="fas fa-home"></i>
           </span>
@@ -34,7 +34,7 @@
       <td>{{ student.second_name | title }}</td>
       <td>{{ student.phone_number }}</td>
       <td>{{ student.id_number | upper}}</td>
-      <td><a href="{% url 'scanner:profile' student.id %}" class="btn btn-success btn-icon-split">
+      <td><a href="{% url 'books:profile' student.id %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>
           </span>
@@ -48,7 +48,7 @@
 {% else %}
 <p class="ml-4"><span><a href="#" class="btn btn-warning btn-circle btn-sm mr-2">
   <i class="fas fa-exclamation-triangle"></i>
-</a></span>Sorry, there are no students registered, click  <a href="{% url 'scanner:register_student' %}">here</a> to register a new student</p>
+</a></span>Sorry, there are no students registered, click  <a href="{% url 'books:register_student' %}">here</a> to register a new student</p>
 
 {% endif %}
 {% endblock content %}

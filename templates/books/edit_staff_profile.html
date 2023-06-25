@@ -7,7 +7,7 @@
 <h5>Update Staff Information</h5>
 <hr>
 <div class="container">
-<form action="{% url 'scanner:edit_staff_profile' staff.pk %}" method="post" enctype="multipart/form-data">
+<form action="{% url 'books:edit_staff_profile' staff.pk %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form | crispy }}
     <button class="btn btn-success btn-icon-split" type="submit">

@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd Party
-    'django_tables2',
-    'crispy_forms',
-    'bootstrap4',
+    # 'django_tables2',
+    # 'crispy_forms',
+    # 'bootstrap4',
     # Local
     'books',
 ]

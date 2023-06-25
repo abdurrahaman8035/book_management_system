@@ -7,7 +7,7 @@
 <h5>Register new staff</h5>
 <hr>
 <div class="container">
-<form action="{% url 'scanner:register_staff' %}" method="post" enctype="multipart/form-data">
+<form action="{% url 'books:register_staff' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form | crispy }}
     <button class="btn btn-success btn-icon-split" type="submit">

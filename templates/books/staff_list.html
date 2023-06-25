@@ -4,7 +4,7 @@
 
 {% block content %}
 <div>
-  <a href="{% url "scanner:home" %}" class="btn btn-primary btn-icon-split float-right">
+  <a href="{% url "books:home" %}" class="btn btn-primary btn-icon-split float-right">
           <span class="icon text-white-50">
             <i class="fas fa-home"></i>
           </span>
@@ -34,7 +34,7 @@
       <td>{{ staff.second_name | title }}</td>
       <td>{{ staff.phone_number }}</td>
       <td>{{ staff.staff_id | upper}}</td>
-      <td><a href="{% url "scanner:staffprofile" staff.pk %}" class="btn btn-success btn-icon-split">
+      <td><a href="{% url "books:staffprofile" staff.pk %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>
           </span>
@@ -49,6 +49,6 @@
 <br>
 <p class="ml-4"><span><a href="#" class="btn btn-warning btn-circle btn-sm mr-2">
   <i class="fas fa-exclamation-triangle"></i>
-</a></span>Sorry, there are no staffs registered, click  <a href="{% url 'scanner:register_staff' %}">here</a> to register a new staff</p>
+</a></span>Sorry, there are no staffs registered, click  <a href="{% url 'books:register_staff' %}">here</a> to register a new staff</p>
 {% endif %}
 {% endblock content %}

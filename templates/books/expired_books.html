@@ -8,7 +8,7 @@
 {% if books or staff_books %}
 
 <div>
-  <a href="{% url "scanner:home" %}" class="btn btn-primary btn-icon-split float-right">
+  <a href="{% url "books:home" %}" class="btn btn-primary btn-icon-split float-right">
           <span class="icon text-white-50">
             <i class="fas fa-home"></i>
           </span>
@@ -36,7 +36,7 @@
       <td>{{ book.title | title |truncatewords:4 }}</td>
       <td>{{ book.borrowed_by.first_name | title }} {{ book.borrowed_by.second_name | title }}</td>
       <td class="text-danger">{{ book.expiring_date |timesince }} ago</td>
-      <td><a href="{% url 'scanner:profile' book.borrowed_by.id %}" class="btn btn-success btn-icon-split">
+      <td><a href="{% url 'books:profile' book.borrowed_by.id %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>
           </span>
@@ -51,7 +51,7 @@
       <td>{{ staff_book.title | title }}</td>
       <td>{{ staff_book.borrowed_by.first_name | title }} {{ staff_book.borrowed_by.second_name | title }} <span class="text-success">(staff)</span></td>
       <td class="text-danger">{{ staff_book.expiring_date |timesince }} ago</td>
-      <td><a href="{% url "scanner:staffprofile" staff_book.borrowed_by.pk %}" class="btn btn-success btn-icon-split">
+      <td><a href="{% url "books:staffprofile" staff_book.borrowed_by.pk %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>
           </span>
