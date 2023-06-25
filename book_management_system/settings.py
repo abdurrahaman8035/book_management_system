@@ -25,7 +25,7 @@ SECRET_KEY = '44%*b$f69tzg3!w)@*9p#)$jo0nbq7fedq7k+8i8&%7b5c519*'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,9 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     # 3rd Party
-    # 'django_tables2',
-    # 'crispy_forms',
-    # 'bootstrap4',
+    'django_tables2',
+    'crispy_forms',
+    'bootstrap4',
     # Local
     'books',
 ]
