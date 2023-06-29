@@ -3,7 +3,7 @@ from django.conf.urls.static import static
 from django.urls import path
 from books.views import (
     HomePageView,
-    AllStudentsView,
+    all_studentsView,
     StudentDetailView,
     StudentBookDelete,
     RenewStudentBookView,
@@ -25,44 +25,44 @@ from books.views import (
 app_name = "books"
 
 urlpatterns = [
-    path("", HomePageView.as_view(), name="home"),
-    path("all_staff/", AllStaffView.as_view(), name="all_staff"),
-    path("all_books/", AllBooksView.as_view(), name="all_books"),
-    path("expired_books/", ExpiredBooksView.as_view(), name="expired_books"),
-    path("register/", RegisterStudent.as_view(), name="register_student"),
-    path("search/", UserSearch.as_view(), name="search_student"),
-    path("students/", AllStudentsView.as_view(), name="allstudents"),
-    path("students/<int:student_id>/", StudentDetailView, name="profile"),
-    path("book/<int:student_id>/", AddStudentBook, name="book-new"),
+    path("book/new/", AddStudentBook.as_view(), name="book-new"),
     path(
-        "students/<int:student_id>/<int:pk>/delete",
+        "book/<int:pk>/<int:student_id>/delete/",
         StudentBookDelete.as_view(),
-        name="deletebook",
+        name="student_book_delete",
     ),
     path(
-        "students/<int:student_id>/<int:pk>/renew",
+        "book/<int:pk>/<int:student_id>/renew/",
         RenewStudentBookView.as_view(),
-        name="renew-book",
+        name="renew_student_book",
     ),
+    path("books/", AllBooksView.as_view(), name="all_books"),
+    path("expired_books/", ExpiredBooksView.as_view(), name="expired_books"),
+    path("student/<int:pk>/", StudentDetailView.as_view(), name="profile"),
     path(
-        "students/<int:pk>/edit",
+        "student/<int:pk>/edit/",
         StudentEditProfile.as_view(),
-        name="edit_student_profile",
+        name="student_edit_profile",
     ),
-    path("register_staff/", RegisterStaff.as_view(), name="register_staff"),
-    path("staff/<int:staff_id>/", StaffDetailView, name="staffprofile"),
-    path("staff_book/<int:staff_id>/", AddStaffBook, name="new_staff_book"),
+    path("student/new/", RegisterStudent.as_view(), name="register_student"),
+    path("students/", all_studentsView.as_view(), name="all_students"),
+    path("staff/new/", RegisterStaff.as_view(), name="register_staff"),
+    path("staff/<int:pk>/edit/", StaffEditProfile.as_view(), name="staff_edit_profile"),
+    path("staff/<int:pk>/", StaffDetailView.as_view(), name="staff_profile"),
+    path("staffs/", AllStaffView.as_view(), name="all_staff"),
+    path("staff/book/<int:staff_id>/", AddStaffBook.as_view(), name="new_staff_book"),
     path(
-        "staff/<int:staff_id>/<int:pk>/delete",
+        "staff/book/<int:pk>/<int:staff_id>/delete/",
         StaffBookDelete.as_view(),
-        name="delete_staff_book",
+        name="staff_book_delete",
     ),
     path(
-        "staff/<int:staff_id>/<int:pk>/renew",
+        "staff/book/<int:pk>/<int:staff_id>/renew/",
         RenewStaffBookView.as_view(),
         name="renew_staff_book",
     ),
-    path("staff/<int:pk>/edit", StaffEditProfile.as_view(), name="edit_staff_profile"),
+    path("search/", UserSearch.as_view(), name="user_search"),
+    path("", HomePageView.as_view(), name="home"),
 ]
 
 if settings.DEBUG:

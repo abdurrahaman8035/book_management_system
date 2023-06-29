@@ -4,6 +4,7 @@ from django.dispatch import receiver
 from django.db import models
 from django.urls import reverse
 from django.core.mail import EmailMessage
+from django.utils.timezone import now
 
 
 LEVEL_CHOICES = [
@@ -13,20 +14,6 @@ LEVEL_CHOICES = [
     ("300", "300 Level"),
     ("400", "400 Level"),
 ]
-
-
-class YearOfAdmission(models.Model):
-    """Year of entry for Students"""
-
-    year = models.CharField(max_length=9)
-
-    class Meta:
-        """Additional information for the Class"""
-
-        verbose_name_plural = "years of admission"
-
-    def __str__(self):
-        return f"{self.year}".title()
 
 
 class UserAbstractModel(models.Model):
@@ -57,17 +44,16 @@ class Student(UserAbstractModel, models.Model):
         verbose_name_plural = "students"
 
     student_id = models.CharField(max_length=15, unique=True)
-    year_of_admission = models.ForeignKey(
-        YearOfAdmission, on_delete=models.CASCADE, null=True, blank=True
-    )
+    year_of_admission = models.CharField(max_length=8, null=True)
     level = models.CharField(
         max_length=10,
         choices=LEVEL_CHOICES,
+        null=True,
     )
 
     def get_absolute_url(self):
         """Return student profile URL"""
-        return reverse("scanner:profile", kwargs={"student_id": self.pk})
+        return reverse("books:profile", kwargs={"pk": self.student_id})
 
     def __str__(self):
         return f"{self.first_name}".title() + " " + f"{self.second_name}".title()
@@ -86,7 +72,7 @@ class Staff(UserAbstractModel, models.Model):
 
     def get_absolute_url(self):
         """Return staff profile URL"""
-        return reverse("scanner:staffprofile", kwargs={"staff_id": self.pk})
+        return reverse("books:staff_profile", kwargs={"pk": self.staff_id})
 
     def __str__(self):
         return f"{self.first_name}".title() + " " + f"{self.second_name}".title()
@@ -101,11 +87,11 @@ class BookAbstractModel(models.Model):
         abstract = True
 
     title = models.CharField("Book title", max_length=100)
-    issued_date = models.DateTimeField(default=datetime.now())
+    issued_date = models.DateTimeField(auto_now_add=True)
     added_days = models.IntegerField(null=True, blank=True)
     remaining_days = models.CharField(max_length=100, null=True, blank=True)
     expiring_date = models.DateTimeField(
-        default=(datetime.today() + timedelta(days=14)), null=True, blank=True
+        default=(now() + timedelta(days=14)), null=True, blank=True
     )
 
 
@@ -123,8 +109,8 @@ class StudentBook(BookAbstractModel, models.Model):
 
     def get_absolute_url(self):
         """Return Student Profile URL"""
-        student_id = self.borrowed_by.pk
-        return reverse("scanner:profile", kwargs={"student_id": student_id})
+        pk = self.borrowed_by.id
+        return reverse("books:profile", kwargs={"pk": pk})
 
     def __str__(self):
         return self.title[:50]
@@ -144,7 +130,7 @@ class StaffBook(BookAbstractModel, models.Model):
     def get_absolute_url(self):
         """Return a Staff Profile URL"""
         staff_id = self.borrowed_by.pk
-        return reverse("scanner:staffprofile", kwargs={"staff_id": staff_id})
+        return reverse("books:staff_profile", kwargs={"pk": staff_id})
 
     def __str__(self):
         return self.title[:50]
@@ -158,7 +144,7 @@ def send_email_to_student(**kwargs):
     student_email = student.Email
     message = (
         f"Dear {student_name}, thanks for registering with us! Attached is our rules"
-        " and regulations for you to read! Thank you so much."
+        " and regulations for you to read! Thank you so much.\nThe Library Team"
     )
     # Check if email not sent
     if not student.email_sent:
@@ -166,11 +152,12 @@ def send_email_to_student(**kwargs):
         email_subject = "Registration Successful!"
         email = EmailMessage(email_subject, message, [student_email])
         # Attach the Library Rules and Regulations document to the Email
-        email.attach_file("static/files/rules_and_regulations.pdf")
+        email.attach_file("static/files/Think-And-Grow-Rich_2011-06.pdf")
         email.send(fail_silently=False)
         student.email_sent = True
-        print("sending email...")
+        print("\nSending email...")
         print(message)
+        print("\n")
         student.save()
 
 
@@ -182,7 +169,7 @@ def send_email_to_staff(**kwargs):
     staff_email = staff.Email
     message = (
         f"Dear {staff_name}, thanks for registering with us! Attached is our rules"
-        " and regulations for you to read! Thank you so much."
+        " and regulations for you to read! Thank you so much.\nThe Library Team"
     )
     # Check if email not sent
     if not staff.email_sent:
@@ -190,24 +177,10 @@ def send_email_to_staff(**kwargs):
         email_subject = "Registration Successful!"
         email = EmailMessage(email_subject, message, [staff_email])
         # Attach the Library Rules and Regulations document to the Email
-        email.attach_file("static/files/rules_and_regulations.pdf")
+        email.attach_file("static/files/Think-And-Grow-Rich_2011-06.pdf")
         email.send(fail_silently=False)
         staff.email_sent = True
-        print("sending email...")
+        print("\nSending email...")
         print(message)
+        print("\n")
         staff.save()
-
-
-class OverDueCharges(models.Model):
-    """Charges for late returning of Books"""
-
-    overdue = models.IntegerField()
-
-    class Meta:
-        """Additional information for the Class"""
-
-        verbose_name_plural = "overdue charges"
-
-    def __str__(self):
-        value = self.overdue
-        return "The current overdue charges is " + str(value) + " naira per day"

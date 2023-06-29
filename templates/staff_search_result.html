@@ -1,4 +1,4 @@
-{% extends 'base\base.html' %}
+{% extends './base/base.html' %}
 {% load static %}
 
 {% block content %}
@@ -26,7 +26,7 @@
       <td>{{ staff.first_name | title }}</td>
       <td>{{ staff.second_name | title }}</td>
       <td>{{ staff.Email }}</td>
-      <td><a href="{% url "books:staffprofile" staff.pk %}" class="btn btn-success btn-icon-split">
+      <td><a href="{% url "books:staff_profile" staff.pk %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>
           </span>

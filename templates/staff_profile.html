@@ -24,7 +24,7 @@
       <p>Registered on : {{ staff.registration_date }}</p>
       <p>Email Sent : {{ staff.email_sent }}</p>
       <!--            <a href="#" class="btn btn-success center">Edit Info</a>-->
-      <a href="{% url 'books:edit_staff_profile' staff.pk %}" class="btn btn-success btn-icon-split">
+      <a href="{% url 'books:staff_edit_profile' staff.pk %}" class="btn btn-success btn-icon-split">
         <span class="icon text-white-50">
           <i class="fas fa-user-edit"></i>
         </span>
@@ -65,7 +65,7 @@
                 </span>
                 <span class="text">renew</span>
               </a>
-              <a href="{% url 'books:delete_staff_book' staff.id book.pk %}"
+              <a href="{% url 'books:staff_book_delete' staff.id book.pk %}"
                 class="btn btn-danger btn-icon-split card-link">
                 <span class="icon text-white-50">
                   <i class="fas fa-trash"></i>
