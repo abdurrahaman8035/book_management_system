@@ -11,12 +11,14 @@ class TestViews(TestCase):
             second_name="Doe",
             Email="john.doe@example.com",
             phone_number="1234567890",
+            id_number="123456",
         )
         self.staff = Staff.objects.create(
             first_name="Jane",
             second_name="Smith",
             Email="jane.smith@example.com",
             phone_number="9876543210",
+            id_number="123456",
         )
         self.student_book = StudentBook.objects.create(
             title="Book Title", borrowed_by=self.student
@@ -87,14 +89,14 @@ class TestViews(TestCase):
         self.client.login(username="testuser", password="test12345")
         response = self.client.post(
             reverse("books:register_student"),
-            data={"name": "New Student", "pk": "654321"},
+            data={"first_name": "New Student", "id_number": "654321"},
         )
         self.assertEqual(response.status_code, 200)
 
     def test_register_staff_view(self):
         self.client.login(username="testuser", password="test12345")
         response = self.client.post(
-            reverse("books:register_staff"), data={"name": "New Staff", "staff_id": "210987"}
+            reverse("books:register_staff"), data={"first_name": "New Staff", "id_number": "210987"}
         )
         self.assertEqual(response.status_code, 200)
 
@@ -102,7 +104,7 @@ class TestViews(TestCase):
         self.client.login(username="testuser", password="test12345")
         response = self.client.post(
             reverse("books:student_edit_profile", args=[self.student.id]),
-            data={"name": "Updated Name"},
+            data={"first_name": "Updated Name"},
         )
         self.assertEqual(response.status_code, 200)
 

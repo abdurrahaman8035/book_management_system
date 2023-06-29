@@ -33,7 +33,7 @@
       <td>{{ staff.first_name | title }}</td>
       <td>{{ staff.second_name | title }}</td>
       <td>{{ staff.phone_number }}</td>
-      <td>{{ staff.staff_id | upper}}</td>
+      <td>{{ staff.id_number | upper}}</td>
       <td><a href="{% url "books:staff_profile" staff.pk %}" class="btn btn-success btn-icon-split">
           <span class="icon text-white-50">
             <i class="fas fa-user"></i>

@@ -19,8 +19,8 @@ from .forms import StaffBookForm, StudentBookForm
 class HomePageView(LoginRequiredMixin, TemplateView):
     """Display the HomePage"""
 
-    template_name = "books:index.html"
-    login_url = 'login'
+    template_name = "index.html"
+    login_url = "login"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -41,8 +41,8 @@ class AddStaffBook(LoginRequiredMixin, CreateView):
     template_name = "addStaffBook.html"
 
     def get_success_url(self):
-        staff = self.object.borrowed_by.id
-        return reverse_lazy("books:staff_profile", kwargs={"staff_id": staff})
+        staff_id = self.object.borrowed_by.id
+        return reverse_lazy("books:staff_profile", kwargs={"pk": staff_id})
 
 
 class StudentDetailView(LoginRequiredMixin, DetailView):
@@ -50,7 +50,8 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
 
     model = Student
     template_name = "student_profile.html"
-    context_object_name = 'student'
+    context_object_name = "student"
+    pk_url_kwarg = "pk"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -62,31 +63,38 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
         student = self.object
         books = student.books.all()
         for book in books:
-            remaining_days = (date(book.expiring_date) - date.today()).days
+            book_expiring_date = book.expiring_date
+            remaining_days = (
+                date(
+                    book_expiring_date.year,
+                    book_expiring_date.month,
+                    book_expiring_date.day,
+                )
+                - date.today()
+            ).days
             book.remaining_days = remaining_days
             # check if book has expired
             if book.remaining_days <= 0:
                 # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
                 book.overdue = (remaining_days * (-1)) * 20
         context["books"] = books
-        context['book_form'] = StudentBookForm()
+        context["book_form"] = StudentBookForm()
         return context
 
     def post(self, request, *args, **kwargs):
-        student_id = self.kwargs['pk']
+        student_id = self.kwargs["pk"]
         book_form = StudentBookForm(request.POST)
         if book_form.is_valid():
             book_info = book_form.cleaned_data
             book = BookFactory.assign_book_to_student(student_id, book_info)
             if book:
                 # Book assigned successfully
-                return redirect('books:profile', pk=student_id)
+                return redirect(Student)
             else:
-                return redirect('books:profile', pk=student_id)
+                return redirect(Student)
         else:
             # Handle the case when the form is not valid
-            return redirect('books:profile', pk=student_id)
-
+            return redirect(Student)
 
 
 class StaffDetailView(LoginRequiredMixin, DetailView):
@@ -94,7 +102,8 @@ class StaffDetailView(LoginRequiredMixin, DetailView):
 
     model = Staff
     template_name = "staff_profile.html"
-    context_object_name = 'staff'
+    context_object_name = "staff"
+    pk_url_kwarg = "pk"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -106,18 +115,42 @@ class StaffDetailView(LoginRequiredMixin, DetailView):
         staff = self.object
         books = staff.books.all()
         for book in books:
-            remaining_days = (book.expiring_date - timezone.now().date()).days
+            book_expiring_date = book.expiring_date
+            remaining_days = (
+                date(
+                    book_expiring_date.year,
+                    book_expiring_date.month,
+                    book_expiring_date.day,
+                )
+                - date.today()
+            ).days
             book.remaining_days = remaining_days
             # check if book has expired
             if book.remaining_days <= 0:
                 # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
                 book.overdue = (remaining_days * (-1)) * 20
         context["books"] = books
+        context["book_form"] = StaffBookForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        staff_id = self.kwargs["pk"]
+        book_form = StudentBookForm(request.POST)
+        if book_form.is_valid():
+            book_info = book_form.cleaned_data
+            book = BookFactory.assign_book_to_staff(staff_id, book_info)
+            if book:
+                # Book assigned successfully
+                return redirect(Staff)
+            else:
+                return redirect(Staff)
+        else:
+            return redirect(Staff)
 
 
 class AllStudentsView(LoginRequiredMixin, ListView):
     """Display list of all Students registered"""
+
     model = Student
     template_name = "students_list.html"
     context_object_name = "students"
@@ -128,19 +161,21 @@ class AllStudentsView(LoginRequiredMixin, ListView):
 
 class StudentBookDelete(LoginRequiredMixin, DeleteView):
     """Remove a Student Book record"""
+
     model = StudentBook
     template_name = "student_book_delete.html"
     login_url = "login"
-    pk_url_kwarg = 'pk'
+    pk_url_kwarg = "pk"
 
     # get the student id from the url
     def get_success_url(self):
-        student = self.kwargs['pk']
+        student = self.kwargs["pk"]
         return reverse_lazy("books:profile", kwargs={"pk": student})
 
 
 class StaffBookDelete(LoginRequiredMixin, DeleteView):
     """Remove a Staff Book record"""
+
     model = StaffBook
     template_name = "deletestaffbook.html"
     context_object_name = "book"
@@ -149,7 +184,7 @@ class StaffBookDelete(LoginRequiredMixin, DeleteView):
     # get the staff id from the url
     def get_success_url(self):
         staff_id = self.object.borrowed_by.pk
-        return reverse_lazy("books:staff_profile", kwargs={"staff_id": staff_id})
+        return reverse_lazy("books:staff_profile", kwargs={"pk": staff_id})
 
 
 class RenewStudentBookView(LoginRequiredMixin, UpdateView):
@@ -163,7 +198,7 @@ class RenewStudentBookView(LoginRequiredMixin, UpdateView):
 
     # get the student id from the url
     def get_success_url(self):
-        student = self.object.borrowed_by.pk
+        student = self.object.borrowed_by.id
         return reverse_lazy("books:profile", kwargs={"pk": student})
 
 
@@ -178,7 +213,7 @@ class RenewStaffBookView(LoginRequiredMixin, UpdateView):
 
     # get the staff id from the url
     def get_success_url(self):
-        staff = self.object.borrowed_by.pk
+        staff = self.object.borrowed_by.id
         return reverse_lazy("books:staff_profile", kwargs={"pk": staff})
 
 
@@ -190,14 +225,14 @@ class UserSearch(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         query = self.request.GET.get("query", "")
-        student_list = Student.objects.filter(pk__icontains=query)
+        student_list = Student.objects.filter(id_number__icontains=query)
         if student_list:
             self.template_name = "student_search_result.html"
             total_result = student_list.count()
             self.extra_context = {"total_result": total_result}
             return student_list
         else:
-            staff_list = Staff.objects.filter(staff_id__icontains=query)
+            staff_list = Staff.objects.filter(id_number__icontains=query)
             self.template_name = "staff_search_result.html"
             total_result = staff_list.count()
             self.extra_context = {"total_result": total_result}
@@ -206,13 +241,14 @@ class UserSearch(LoginRequiredMixin, ListView):
 
 class RegisterStudent(LoginRequiredMixin, CreateView):
     """Add a new Student"""
+
     model = Student
     template_name = "register_student.html"
     fields = [
         "image",
         "first_name",
         "second_name",
-        "pk",
+        "id_number",
         "Email",
         "phone_number",
         "year_of_admission",
@@ -223,21 +259,30 @@ class RegisterStudent(LoginRequiredMixin, CreateView):
 
 class RegisterStaff(LoginRequiredMixin, CreateView):
     """Add a new Staff"""
+
     model = Staff
     template_name = "register_staff.html"
-    fields = "__all__"
+    fields = [
+        "image",
+        "first_name",
+        "second_name",
+        "id_number",
+        "Email",
+        "phone_number",
+    ]
     login_url = "login"
 
 
 class StudentEditProfile(UpdateView):
     """Edit a Student's information"""
+
     model = Student
     template_name = "student_edit_profile.html"
     fields = [
         "image",
         "first_name",
         "second_name",
-        "student_id",
+        "id_number",
         "Email",
         "phone_number",
         "year_of_admission",
@@ -248,9 +293,17 @@ class StudentEditProfile(UpdateView):
 
 class StaffEditProfile(UpdateView):
     """Edit Staff information"""
+
     model = Staff
     template_name = "staff_edit_profile.html"
-    fields = ["image", "first_name", "second_name", "staff_id", "Email", "phone_number"]
+    fields = [
+        "image",
+        "first_name",
+        "second_name",
+        "id_number",
+        "Email",
+        "phone_number",
+    ]
     context_object_name = "staff"
 
 

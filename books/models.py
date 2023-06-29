@@ -43,7 +43,7 @@ class Student(UserAbstractModel, models.Model):
         ordering = ["-registration_date"]
         verbose_name_plural = "students"
 
-    student_id = models.CharField(max_length=15, unique=True)
+    id_number = models.CharField(max_length=15, unique=True)
     year_of_admission = models.CharField(max_length=8, null=True)
     level = models.CharField(
         max_length=10,
@@ -53,7 +53,7 @@ class Student(UserAbstractModel, models.Model):
 
     def get_absolute_url(self):
         """Return student profile URL"""
-        return reverse("books:profile", kwargs={"pk": self.student_id})
+        return reverse("books:profile", kwargs={"pk": self.id})
 
     def __str__(self):
         return f"{self.first_name}".title() + " " + f"{self.second_name}".title()
@@ -68,11 +68,11 @@ class Staff(UserAbstractModel, models.Model):
         ordering = ["-registration_date"]
         verbose_name_plural = "staff"
 
-    staff_id = models.CharField(max_length=15, unique=True)
+    id_number = models.CharField(max_length=15, unique=True)
 
     def get_absolute_url(self):
         """Return staff profile URL"""
-        return reverse("books:staff_profile", kwargs={"pk": self.staff_id})
+        return reverse("books:staff_profile", kwargs={"pk": self.id})
 
     def __str__(self):
         return f"{self.first_name}".title() + " " + f"{self.second_name}".title()
@@ -109,8 +109,7 @@ class StudentBook(BookAbstractModel, models.Model):
 
     def get_absolute_url(self):
         """Return Student Profile URL"""
-        pk = self.borrowed_by.id
-        return reverse("books:profile", kwargs={"pk": pk})
+        return reverse("books:profile", kwargs={"pk": self.borrowed_by.id})
 
     def __str__(self):
         return self.title[:50]
@@ -129,8 +128,7 @@ class StaffBook(BookAbstractModel, models.Model):
 
     def get_absolute_url(self):
         """Return a Staff Profile URL"""
-        staff_id = self.borrowed_by.pk
-        return reverse("books:staff_profile", kwargs={"pk": staff_id})
+        return reverse("books:staff_profile", kwargs={"pk": self.borrowed_by.id})
 
     def __str__(self):
         return self.title[:50]

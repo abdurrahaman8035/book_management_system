@@ -83,12 +83,22 @@
       </div>
       <br>
       <hr>
-      <a href="" class="btn btn-success btn-icon-split">
+      <form action="{% url 'books:profile' pk=student.id %}" method="post">
+        {% csrf_token %}
+            {{ form | crispy }}
+        <button class="btn btn-success btn-icon-split" type="submit">
+                                    <span class="icon text-white-50">
+                                      <i class="fas fa-plus-circle"></i>
+                                    </span>
+                                    <span class="text">Add book</span>
+                                  </button>
+    </form>
+      <!-- <a href="" class="btn btn-success btn-icon-split">
         <span class="icon text-white-50">
           <i class="fas fa-plus-circle"></i>
         </span>
         <span class="text">Add new book</span>
-      </a>
+      </a> -->
       <a href="{% url 'books:all_students' %}" class="btn btn-success btn-icon-split">
         <span class="icon text-white-50">
           <i class="fas fa-user-graduate"></i>

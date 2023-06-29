@@ -20,7 +20,7 @@
       <p>Name : {{ staff.first_name | title }} {{ staff.second_name | title }}</p>
       <p>Email : {{ staff.Email }}</p>
       <p>Phone Number : {{ staff.phone_number }}</p>
-      <p>Staff ID : {{ staff.staff_id | upper}}</p>
+      <p>Staff ID : {{ staff.id_number | upper}}</p>
       <p>Registered on : {{ staff.registration_date }}</p>
       <p>Email Sent : {{ staff.email_sent }}</p>
       <!--            <a href="#" class="btn btn-success center">Edit Info</a>-->
@@ -81,12 +81,22 @@
       </div>
       <br>
       <hr>
-      <a href="{% url 'books:new_staff_book' staff.id %}" class="btn btn-success btn-icon-split">
+      <form action="{% url 'books:new_staff_book' staff.id %}" method="post">
+        {% csrf_token %}
+            {{ form | crispy }}
+        <button class="btn btn-success btn-icon-split" type="submit">
+                                    <span class="icon text-white-50">
+                                      <i class="fas fa-plus-circle"></i>
+                                    </span>
+                                    <span class="text">Add book</span>
+                                  </button>
+    </form>
+      <!-- <a href="{% url 'books:new_staff_book' staff.id %}" class="btn btn-success btn-icon-split">
         <span class="icon text-white-50">
           <i class="fas fa-plus-circle"></i>
         </span>
         <span class="text">Add new book</span>
-      </a>
+      </a> -->
       <a href="{% url 'books:all_staff' %}" class="btn btn-success btn-icon-split">
         <span class="icon text-white-50">
           <i class="fas fa-user"></i>
