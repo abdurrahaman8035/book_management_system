@@ -7,7 +7,7 @@
 
 <h5>Add new book details</h5>
 <hr>
-<form action="{% url 'books:book-new' %}" method="post">
+<form action="{% url ''' %}" method="post">
     {% csrf_token %}
         {{ form | crispy }}
     <button class="btn btn-success btn-icon-split" type="submit">

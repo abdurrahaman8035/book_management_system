@@ -3,12 +3,11 @@ from django.conf.urls.static import static
 from django.urls import path
 from books.views import (
     HomePageView,
-    all_studentsView,
+    AllStudentsView,
     StudentDetailView,
     StudentBookDelete,
     RenewStudentBookView,
     UserSearch,
-    AddStudentBook,
     StudentEditProfile,
     ExpiredBooksView,
     AllBooksView,
@@ -25,7 +24,6 @@ from books.views import (
 app_name = "books"
 
 urlpatterns = [
-    path("book/new/", AddStudentBook.as_view(), name="book-new"),
     path(
         "book/<int:pk>/<int:student_id>/delete/",
         StudentBookDelete.as_view(),
@@ -45,7 +43,7 @@ urlpatterns = [
         name="student_edit_profile",
     ),
     path("student/new/", RegisterStudent.as_view(), name="register_student"),
-    path("students/", all_studentsView.as_view(), name="all_students"),
+    path("students/", AllStudentsView.as_view(), name="all_students"),
     path("staff/new/", RegisterStaff.as_view(), name="register_staff"),
     path("staff/<int:pk>/edit/", StaffEditProfile.as_view(), name="staff_edit_profile"),
     path("staff/<int:pk>/", StaffDetailView.as_view(), name="staff_profile"),

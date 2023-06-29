@@ -9,49 +9,29 @@ from django.views.generic import (
     DetailView,
 )
 from django.urls import reverse_lazy, reverse
+from django.shortcuts import redirect
 from .models import Student, Staff, StaffBook, StudentBook
+from django.utils import timezone
+from utils.book_factory import BookFactory
+from .forms import StaffBookForm, StudentBookForm
 
 
 class HomePageView(LoginRequiredMixin, TemplateView):
     """Display the HomePage"""
 
-    template_name = "index.html"
+    template_name = "books:index.html"
     login_url = 'login'
 
-    def get_context_data(self):
-        total_books = StudentBook.objects.count() + StaffBook.objects.count()
-        total_students = Student.objects.count()
-        total_staff = Staff.objects.count()
-        student_expired_books = StudentBook.objects.filter(expiring_date__lt=date.today())
-        staff_expired_books = StaffBook.objects.filter(expiring_date__lt=date.today())
-        total_expired_books = student_expired_books.count() + staff_expired_books.count()
-        context = {
-            "total_books": total_books,
-            "total_students": total_students,
-            "total_expired_books": total_expired_books,
-            "total_staff": total_staff,
-        }
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["total_books"] = StudentBook.objects.count() + StaffBook.objects.count()
+        context["total_students"] = Student.objects.count()
+        context["total_expired_books"] = (
+            StudentBook.objects.filter(expiring_date__lt=timezone.now().date()).count()
+            + StaffBook.objects.filter(expiring_date__lt=timezone.now().date()).count()
+        )
+        context["total_staff"] = Staff.objects.count()
         return context
-
-
-class AddStudentBook(LoginRequiredMixin, CreateView):
-    """Lend a Book to a Student"""
-
-    model = StudentBook
-    template_name = "addBook.html"
-    fields = ['title']
-
-    def get_success_url(self):
-        pk = self.request.session.get('pk', None)
-        # pk = self.object.id
-        if pk:
-            pk = pk
-            # Clear the session
-            self.request.session.flush()
-        else:
-            pk = None
-        # pk = self.kwargs['pk']
-        return reverse_lazy("books:profile", kwargs={"pk": pk})
 
 
 class AddStaffBook(LoginRequiredMixin, CreateView):
@@ -72,37 +52,41 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
     template_name = "student_profile.html"
     context_object_name = 'student'
 
-    def get_queryset(self, **kwargs):
-        context = super().get_queryset(**kwargs)
-        pk = self.kwargs['pk']
-        # Set the student ID on the session
-        self.request.session['pk'] = pk
-        # get all books borrowed by this student using related_name
-        student = Student.objects.get(id=pk)
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.prefetch_related("books")
+        return queryset
 
-        for book in student.books.all():
-            # calculate their remaining days left to expire
-            book_expiring_date = datetime.date(book.expiring_date)
-            current_date = date.today()
-
-            time_left = (
-                date(
-                    book_expiring_date.year,
-                    book_expiring_date.month,
-                    book_expiring_date.day,
-                )
-            ) - current_date
-
-            remaining_days = time_left.days
-
-            result = str(remaining_days) + " day(s) remaining"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        student = self.object
+        books = student.books.all()
+        for book in books:
+            remaining_days = (date(book.expiring_date) - date.today()).days
+            book.remaining_days = remaining_days
             # check if book has expired
-            if remaining_days <= 0:
+            if book.remaining_days <= 0:
                 # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
                 book.overdue = (remaining_days * (-1)) * 20
-            book.remaining_days = result
-            book.save()
+        context["books"] = books
+        context['book_form'] = StudentBookForm()
         return context
+
+    def post(self, request, *args, **kwargs):
+        student_id = self.kwargs['pk']
+        book_form = StudentBookForm(request.POST)
+        if book_form.is_valid():
+            book_info = book_form.cleaned_data
+            book = BookFactory.assign_book_to_student(student_id, book_info)
+            if book:
+                # Book assigned successfully
+                return redirect('books:profile', pk=student_id)
+            else:
+                return redirect('books:profile', pk=student_id)
+        else:
+            # Handle the case when the form is not valid
+            return redirect('books:profile', pk=student_id)
+
 
 
 class StaffDetailView(LoginRequiredMixin, DetailView):
@@ -110,43 +94,29 @@ class StaffDetailView(LoginRequiredMixin, DetailView):
 
     model = Staff
     template_name = "staff_profile.html"
-    login_url = "login"
+    context_object_name = 'staff'
 
-    def get_queryset(self, **kwargs):
-        context = super().get_queryset(**kwargs)
-        staff = self.get_object()
-        # get all books borrowed by this student using related_name
-        all_books = staff.books.all()
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.prefetch_related("books")
+        return queryset
 
-        for book in all_books:
-            # calculate their remaining days left to expire
-            book_expiring_date = datetime.date(book.expiring_date)
-            current_date = date.today()
-
-            time_left = (
-                date(
-                    book_expiring_date.year,
-                    book_expiring_date.month,
-                    book_expiring_date.day,
-                )
-            ) - current_date
-
-            remaining_days = time_left.days
-
-            result = str(remaining_days) + " day(s) remaining"
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        staff = self.object
+        books = staff.books.all()
+        for book in books:
+            remaining_days = (book.expiring_date - timezone.now().date()).days
+            book.remaining_days = remaining_days
             # check if book has expired
-            if remaining_days <= 0:
+            if book.remaining_days <= 0:
                 # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
                 book.overdue = (remaining_days * (-1)) * 20
-            book.remaining_days = result
-            book.save()
-        books = all_books
         context["books"] = books
-        context["staff"] = staff
         return context
 
 
-class all_studentsView(LoginRequiredMixin, ListView):
+class AllStudentsView(LoginRequiredMixin, ListView):
     """Display list of all Students registered"""
     model = Student
     template_name = "students_list.html"
@@ -267,7 +237,7 @@ class StudentEditProfile(UpdateView):
         "image",
         "first_name",
         "second_name",
-        "pk",
+        "student_id",
         "Email",
         "phone_number",
         "year_of_admission",

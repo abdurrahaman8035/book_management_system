@@ -12,7 +12,7 @@ class StudentModelTest(TestCase):
             Email="john.doe@example.com",
             phone_number="1234567890",
         )
-        expected_url = reverse("books:profile", kwargs={"pk": student.pk})
+        expected_url = reverse("books:profile", kwargs={"pk": student.id})
         self.assertEqual(student.get_absolute_url(), expected_url)
 
 
@@ -24,7 +24,7 @@ class StaffModelTest(TestCase):
             Email="jane.smith@example.com",
             phone_number="9876543210",
         )
-        expected_url = reverse("books:staff_profile", kwargs={"pk": staff.pk})
+        expected_url = reverse("books:staff_profile", kwargs={"pk": staff.id})
         self.assertEqual(staff.get_absolute_url(), expected_url)
 
 
@@ -37,7 +37,7 @@ class StudentBookModelTest(TestCase):
             phone_number="1234567890",
         )
         book = StudentBook.objects.create(title="Book Title", borrowed_by=student)
-        expected_url = reverse("books:profile", kwargs={"pk": student.pk})
+        expected_url = reverse("books:profile", kwargs={"pk": student.id})
         self.assertEqual(book.get_absolute_url(), expected_url)
 
 

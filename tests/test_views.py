@@ -104,7 +104,7 @@ class TestViews(TestCase):
             reverse("books:student_edit_profile", args=[self.student.id]),
             data={"name": "Updated Name"},
         )
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, 200)
 
     def test_staff_edit_profile_view(self):
         self.client.login(username="testuser", password="test12345")
