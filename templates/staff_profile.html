@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
-
 {% load static %}
+{% load crispy_forms_tags %}
 
 {% block content %}
 
@@ -49,8 +49,6 @@
               <h5 class="card-title" style="color: white;">{{ book.rem_days }}</h5>
               <ul style="text-align: left;" class="list-group list-group-flush">
                 <li class="list-group-item">Title : {{ book.title | title }}</li>
-                <li class="list-group-item">Author : </li>
-                <li class="list-group-item">Publisher : </li>
                 <li class="list-group-item">ISBN : 9887676545432</li>
                 <li class="list-group-item">Date Issued : {{ book.issued_date }}</li>
                 <li class="list-group-item">Expiring Date : {{ book.expiring_date }}</li>
@@ -58,14 +56,14 @@
                 <li class="list-group-item font-italic">Issued {{ book.issued_date |timesince }} ago</li>
               </ul>
               <br>
-              <a href="{% url 'books:renew_staff_book' staff.id book.pk %}"
+              <a href="{% url 'books:renew_staff_book' book.pk staff.id %}"
                 class="btn btn-success btn-icon-split card-link" style="padding-right:23px">
                 <span class="icon text-white-50">
                   <i class="fas fa-undo-alt"></i>
                 </span>
                 <span class="text">renew</span>
               </a>
-              <a href="{% url 'books:staff_book_delete' staff.id book.pk %}"
+              <a href="{% url 'books:staff_book_delete' book.pk staff.id %}"
                 class="btn btn-danger btn-icon-split card-link">
                 <span class="icon text-white-50">
                   <i class="fas fa-trash"></i>
@@ -81,7 +79,7 @@
       </div>
       <br>
       <hr>
-      <form action="{% url 'books:new_staff_book' staff.id %}" method="post">
+      <form action="{% url 'books:staff_profile' pk=staff.id %}" method="post">
         {% csrf_token %}
             {{ form | crispy }}
         <button class="btn btn-success btn-icon-split" type="submit">
@@ -91,12 +89,6 @@
                                     <span class="text">Add book</span>
                                   </button>
     </form>
-      <!-- <a href="{% url 'books:new_staff_book' staff.id %}" class="btn btn-success btn-icon-split">
-        <span class="icon text-white-50">
-          <i class="fas fa-plus-circle"></i>
-        </span>
-        <span class="text">Add new book</span>
-      </a> -->
       <a href="{% url 'books:all_staff' %}" class="btn btn-success btn-icon-split">
         <span class="icon text-white-50">
           <i class="fas fa-user"></i>
@@ -112,12 +104,17 @@
   {% else %}
   <p style="text-align:center; color:red;">No book has been borrowed by {{ staff.first_name }}
     {{ staff.second_name }}</p>
-  <a href="{% url 'books:new_staff_book' staff.id %}" class="btn btn-success btn-icon-split">
-    <span class="icon text-white-50">
-      <i class="fas fa-plus-circle"></i>
-    </span>
-    <span class="text">Add new book</span>
-  </a>
+    <hr>
+    <form action="{% url 'books:staff_profile' pk=staff.id %}" method="post">
+      {% csrf_token %}
+          {{ form | crispy }}
+      <button class="btn btn-success btn-icon-split" type="submit">
+                                  <span class="icon text-white-50">
+                                    <i class="fas fa-plus-circle"></i>
+                                  </span>
+                                  <span class="text">Add book</span>
+                                </button>
+  </form>
   {% endif %}
 
 </div>

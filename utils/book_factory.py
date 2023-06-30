@@ -9,6 +9,7 @@ class BookFactory:
             student = Student.objects.get(id=student_id)
             student_book = StudentBook.objects.create(**book_info)
             student_book.borrowed_by = student
+            student_book.save()
             return student_book
         except Student.DoesNotExist:
             return None
@@ -19,6 +20,7 @@ class BookFactory:
             staff = Staff.objects.get(id=staff_id)
             staff_book = StaffBook.objects.create(**book_info)
             staff_book.borrowed_by = staff
+            staff_book.save()
             return staff_book
         except Staff.DoesNotExist:
             return None

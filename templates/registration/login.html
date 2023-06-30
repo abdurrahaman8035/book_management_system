@@ -13,14 +13,16 @@
 
 
       <div class="col-xl-10 col-lg-12 col-md-9 my-auto">
-        <div>            <marquee><h1 class="text-light">WELCOME TO YSU LIBRARY BOOKS RECORD AND TRACKING SYSTEM</h1></marquee>
-</div>
+        <div>
+          <h1 class="text-center">YOBE STATE UNIVERSITY, NIGERIA</h1>
+          <h3 class="text-center">BOOKS RECORD AND TRACKING SYSTEM</h3>
+        </div>
         <div class="card o-hidden border-0 shadow-lg my-5">
           <div class="card-body p-0">
             <!-- Nested Row within Card Body -->
             <div class="row">
               <div class="col-lg-6 d-none d-lg-block bg-login-image">
-                <img src="{% static 'img/ysu.jpg' %}" height="100%" width="100%">
+                <img src="{% static 'img/myImage.jpg' %}" height="100%" width="100%">
               </div>
               <div class="col-lg-6">
                 <div class="p-5">
@@ -30,10 +32,12 @@
                   <form class="user" method="post">
                     {% csrf_token %}
                     <div class="form-group">
-                      <input type="text" class="form-control form-control-user" autofocus name="username" id="id_username" helptext="please enter username" placeholder="Enter Username">
+                      <input type="text" class="form-control form-control-user" autofocus name="username"
+                        id="id_username" helptext="please enter username" placeholder="Enter Username">
                     </div>
                     <div class="form-group">
-                      <input type="password" name="password" class="form-control form-control-user" id="id_password" placeholder="Password">
+                      <input type="password" name="password" class="form-control form-control-user" id="id_password"
+                        placeholder="Password">
                     </div>
                     <div class="form-group">
                       <div class="custom-control custom-checkbox small">
@@ -51,23 +55,23 @@
                   </div>
                   <div class="text-center text-sm">
                     <div class="copyright text-center" style="font-size:13px;">
-                                <span>Made with <span class="icon text-red-50 text-danger">
-                                  <i class="fas fa-heart"></i></span> by <a href="#">Abdurrahaman Abdullahi</a></span>
+                      <span>Made with <span class="icon text-red-50 text-danger">
+                          <i class="fas fa-heart"></i></span> by <a href="#">Abdurrahaman Abdullahi</a></span>
                     </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
         </div>
 
       </div>
 
     </div>
 
-  </div>
-
-<!-- Optional JavaScript -->
-  {% include 'base/js.html' %}
+    <!-- Optional JavaScript -->
+    {% include 'base/js.html' %}
 
 
 </body>

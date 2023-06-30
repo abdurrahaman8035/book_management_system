@@ -13,7 +13,6 @@ from books.views import (
     AllBooksView,
     AllStaffView,
     StaffDetailView,
-    AddStaffBook,
     StaffBookDelete,
     RenewStaffBookView,
     StaffEditProfile,
@@ -48,7 +47,6 @@ urlpatterns = [
     path("staff/<int:pk>/edit/", StaffEditProfile.as_view(), name="staff_edit_profile"),
     path("staff/<int:pk>/", StaffDetailView.as_view(), name="staff_profile"),
     path("staffs/", AllStaffView.as_view(), name="all_staff"),
-    path("staff/book/<int:staff_id>/", AddStaffBook.as_view(), name="new_staff_book"),
     path(
         "staff/book/<int:pk>/<int:staff_id>/delete/",
         StaffBookDelete.as_view(),

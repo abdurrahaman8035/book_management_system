@@ -1,3 +1,4 @@
+from django.contrib import messages
 from datetime import date, datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import (
@@ -34,17 +35,6 @@ class HomePageView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class AddStaffBook(LoginRequiredMixin, CreateView):
-    """Lend a Book to a staff"""
-
-    model = StaffBook
-    template_name = "addStaffBook.html"
-
-    def get_success_url(self):
-        staff_id = self.object.borrowed_by.id
-        return reverse_lazy("books:staff_profile", kwargs={"pk": staff_id})
-
-
 class StudentDetailView(LoginRequiredMixin, DetailView):
     """Display Student information and all books borrowed by the Student"""
 
@@ -78,7 +68,8 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
                 # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
                 book.overdue = (remaining_days * (-1)) * 20
         context["books"] = books
-        context["book_form"] = StudentBookForm()
+        form = StudentBookForm()
+        context["form"] = form
         return context
 
     def post(self, request, *args, **kwargs):
@@ -88,13 +79,17 @@ class StudentDetailView(LoginRequiredMixin, DetailView):
             book_info = book_form.cleaned_data
             book = BookFactory.assign_book_to_student(student_id, book_info)
             if book:
-                # Book assigned successfully
-                return redirect(Student)
+                messages.add_message(
+                    request, messages.INFO, "Book assigned successfully."
+                )
+                return redirect("books:profile", pk=student_id)
             else:
-                return redirect(Student)
+                messages.add_message(request, messages.INFO, "Book not assigned.")
+                return redirect("books:profile", pk=student_id)
         else:
             # Handle the case when the form is not valid
-            return redirect(Student)
+            messages.add_message(request, messages.INFO, "Form is not valid.")
+            return redirect("books:profile", pk=student_id)
 
 
 class StaffDetailView(LoginRequiredMixin, DetailView):
@@ -130,22 +125,28 @@ class StaffDetailView(LoginRequiredMixin, DetailView):
                 # Calculate overdue charges: N20.00 per day. (-1) was used to get rid of negative values
                 book.overdue = (remaining_days * (-1)) * 20
         context["books"] = books
-        context["book_form"] = StaffBookForm()
+        form = StaffBookForm()
+        context["form"] = form
         return context
 
     def post(self, request, *args, **kwargs):
         staff_id = self.kwargs["pk"]
-        book_form = StudentBookForm(request.POST)
+        book_form = StaffBookForm(request.POST)
         if book_form.is_valid():
             book_info = book_form.cleaned_data
             book = BookFactory.assign_book_to_staff(staff_id, book_info)
             if book:
-                # Book assigned successfully
-                return redirect(Staff)
+                messages.add_message(
+                    request, messages.INFO, "Book assigned successfully."
+                )
+                return redirect("books:staff_profile", pk=staff_id)
             else:
-                return redirect(Staff)
+                messages.add_message(request, messages.INFO, "Book not assigned.")
+                return redirect("books:staff_profile", pk=staff_id)
         else:
-            return redirect(Staff)
+            # Handle the case when the form is not valid
+            messages.add_message(request, messages.INFO, "Form is not valid.")
+            return redirect("books:staff_profile", pk=staff_id)
 
 
 class AllStudentsView(LoginRequiredMixin, ListView):
@@ -164,12 +165,13 @@ class StudentBookDelete(LoginRequiredMixin, DeleteView):
 
     model = StudentBook
     template_name = "student_book_delete.html"
+    context_object_name = 'book'
     login_url = "login"
     pk_url_kwarg = "pk"
 
     # get the student id from the url
     def get_success_url(self):
-        student = self.kwargs["pk"]
+        student = self.kwargs["student_id"]
         return reverse_lazy("books:profile", kwargs={"pk": student})
 
 
@@ -307,38 +309,35 @@ class StaffEditProfile(UpdateView):
     context_object_name = "staff"
 
 
-class ExpiredBooksView(LoginRequiredMixin, ListView):
+class ExpiredBooksView(LoginRequiredMixin, TemplateView):
     """Display a list of expired books"""
 
-    model = StudentBook
     template_name = "expired_books.html"
     login_url = "login"
 
-    def get_queryset(self):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         student_expired_books = StudentBook.objects.filter(
             expiring_date__lt=date.today()
         )
         staff_expired_books = StaffBook.objects.filter(expiring_date__lt=date.today())
-        context = {
-            "student_expired_books": student_expired_books,
-            "staff_expired_books": staff_expired_books,
-        }
+        context["books"] = student_expired_books
+        context["staff_books"] = staff_expired_books
         return context
 
 
-class AllBooksView(LoginRequiredMixin, ListView):
+class AllBooksView(LoginRequiredMixin, TemplateView):
     """Display a list of all books"""
 
     template_name = "all_books.html"
     login_url = "login"
 
-    def get_queryset(self):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         student_books_list = StudentBook.objects.all()
         staff_books_list = StaffBook.objects.all()
-        context = {
-            "student_books_list": student_books_list,
-            "staff_books_list": staff_books_list,
-        }
+        context["student_books_list"] = student_books_list
+        context["staff_books_list"] = staff_books_list
         return context
 
 
@@ -349,7 +348,8 @@ class AllStaffView(LoginRequiredMixin, ListView):
     context_object_name = "staff"
     template_name = "staff_list.html"
     login_url = "login"
+    context_object_name = "staffs"
 
     def get_queryset(self):
-        staff_list = Staff.objects.all()
-        return staff_list
+        staffs = Staff.objects.all()
+        return staffs
