@@ -10,7 +10,7 @@ Follow the steps below to install and run the Book Management System locally on 
 ## Installation Steps
 1. Clone the repository:
    ```
-   git clone <repository_url>
+   git clone https://github.com/abdurrahaman8035/book_management_system.git
    ```
 2. Create a virtual environment:
    ```

@@ -11,7 +11,7 @@ Follow the steps below to deploy the Book Management System to a deployment plat
 2. Set up the PostgreSQL database on Heroku
 3. Clone the repository locally:
    ```
-   git clone <repository_url>
+   git clone https://github.com/abdurrahaman8035/book_management_system.git
    ```
 4. Create a new branch for deployment:
    ```
